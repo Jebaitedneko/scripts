@@ -1,4 +1,4 @@
-## 1. dtsi_collector.sh ##
+## 2. cleandts.sh ##
 
 ### About: ###
 
