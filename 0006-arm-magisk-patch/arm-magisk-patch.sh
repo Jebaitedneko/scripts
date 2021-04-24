@@ -1,21 +1,21 @@
 #!/bin/bash
 
 echo -e "\ncarving out boot-headers from ${1}..."
-dd if=$1 of=boot-headers bs=1 skip=0 count=$(grep -obUaPHn "\x00\x00\xA0\xE1\x00\x00" $1 | cut -f3 -d ":" | head -n1)
+dd if=$1 of=boot-headers bs=1 skip=0 count=$(grep -obaP "\x00\x00\xA0\xE1\x00\x00" $1 | cut -f1 -d ":" | head -n1)
 
 echo -e "\ncarving out kernel-bits from ${1} ..."
-dd if=$1 of=kernel-bits bs=1 skip=$(grep -obUaPHn "\x00\x00\xA0\xE1\x00\x00" $1 | cut -f3 -d ":" | head -n1)
+dd if=$1 of=kernel-bits bs=1 skip=$(grep -obaP "\x00\x00\xA0\xE1\x00\x00" $1 | cut -f1 -d ":" | head -n1)
 
 echo -e "\ncarving out arm header from kernel-bits ..."
-dd if=kernel-bits of=arm-header bs=1 skip=0 count=$(grep -obUaPHn "\x1F\x8B\x08" kernel-bits | cut -f3 -d ":" | head -n1)
+dd if=kernel-bits of=arm-header bs=1 skip=0 count=$(grep -obaP "\x1F\x8B\x08" kernel-bits | cut -f1 -d ":" | head -n1)
 
 echo -e "\ncarving out Image.gz-dtb from kernel-bits ..."
-dd if=kernel-bits of=Image.gz-dtb bs=1 skip=$(grep -obUaPHn "\x1F\x8B\x08" kernel-bits | cut -f3 -d ":" | head -n1)
+dd if=kernel-bits of=Image.gz-dtb bs=1 skip=$(grep -obaP "\x1F\x8B\x08" kernel-bits | cut -f1 -d ":" | head -n1)
 
 rm kernel-bits
 
 echo -e "\ncarving out dtbs from Image.gz-dtb ..."
-dd if=Image.gz-dtb of=dtbs bs=1 skip=$(grep -obUaPHn "\xD0\x0D\xFE\xED" Image.gz-dtb | cut -f3 -d ":" | head -n1)
+dd if=Image.gz-dtb of=dtbs bs=1 skip=$(grep -obaP "\xD0\x0D\xFE\xED" Image.gz-dtb | cut -f1 -d ":" | head -n1)
 
 echo -e "\ngunzip Image.gz-dtb in progress ..."
 mv Image.gz-dtb Image.gz
