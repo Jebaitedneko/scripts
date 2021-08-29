@@ -16,7 +16,9 @@ Place this script inside the root directory of kernel source.
 
 Open a terminal in kernel rootdir.
 
-`./dtsi_collector.sh dtbname`
+`./dtsi_collector.sh dtbname dtsfolder`
+
+dtsfolder is qcom by default if nothing is passed as the second argument but it may be vendor/qcom for 4.19 and above. pass it as needed.
 
 A folder with the format KERNEL-DIR-NAME_DTB-NAME would be created outside the kernel dir with all the dtsis used to build that specific dtb.
 
