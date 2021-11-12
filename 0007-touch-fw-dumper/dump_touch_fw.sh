@@ -4,10 +4,10 @@
 rom_link="$1"
 rom_name=$(echo $rom_link | sed 's/.*\///;s/.zip//g')
 echo $rom_name > info.txt
-[ ! -f "${rom_name}.zip" ] && aria2c -j32 "$rom_link"
+[ ! -f "${rom_name}.zip" ] && aria2c -j32 "$rom_link" &> /dev/null
 unzip -p *.zip boot.img > boot.img
 
-[ ! -f unpack_bootimg.py ] && wget "https://android.googlesource.com/platform/system/tools/mkbootimg/+archive/refs/heads/master.tar.gz" && tar -xf master.tar.gz unpack_bootimg.py && rm master.tar.gz
+[ ! -f unpack_bootimg.py ] && wget "https://android.googlesource.com/platform/system/tools/mkbootimg/+archive/refs/heads/master.tar.gz" &> /dev/null && tar -xf master.tar.gz unpack_bootimg.py && rm master.tar.gz
 chmod +x unpack_bootimg.py
 python3 unpack_bootimg.py --boot_img boot.img --out . &> /dev/null
 
@@ -22,6 +22,7 @@ find -type f -iname "*.bin" -exec avr-objcopy -I binary -O ihex {} {}.ihex \;
 md5sum *.bin *.ihex >> info.txt
 
 ZIPNAME="$(cat info.txt | head -n1)"_FW.zip
-zip -r9 $ZIPNAME *.bin *.ihex info.txt
+zip -r9 $ZIPNAME *.bin *.ihex info.txt &> /dev/null
 rm *.bin *.ihex info.txt dtb ramdisk boot.img firmware.xxd kernel
-echo "$(curl -s -F f[]=@$ZIPNAME "https://oshi.at" | grep DL | sed 's/DL: //g')"
+echo -e "$(curl -s -F f[]=@$ZIPNAME "https://oshi.at" | grep DL | sed 's/DL: //g')\n" >> .links
+rm $ZIPNAME
