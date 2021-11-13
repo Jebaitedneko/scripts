@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# apt install aria2 gcc-avr xxd &> /dev/null
 rom_link="$1"
 rom_name=$(echo $rom_link | sed 's/.*\///;s/.zip//g')
 echo $rom_name > info.txt
 [ ! -f "${rom_name}.zip" ] && aria2c -j32 "$rom_link" &> /dev/null
-unzip -p *.zip boot.img > boot.img
+unzip -p "${rom_name}.zip" boot.img > boot.img
 
 [ ! -f unpack_bootimg.py ] && wget "https://android.googlesource.com/platform/system/tools/mkbootimg/+archive/refs/heads/master.tar.gz" &> /dev/null && tar -xf master.tar.gz unpack_bootimg.py && rm master.tar.gz
 chmod +x unpack_bootimg.py
@@ -18,11 +17,15 @@ xxd -r -p <(sed -n '17409,26112'p firmware.xxd | sed "s/ //g" | tr -d '\n') > j2
 xxd -r -p <(sed -n '26113,34816'p firmware.xxd | sed "s/ //g" | tr -d '\n') > j20s_novatek_ts_mp02.bin
 
 find -type f -iname "*.bin" -exec avr-objcopy -I binary -O ihex {} {}.ihex \;
+sed -i "s/\r//g" *.bin
+sed -i "s/\r//g" *.ihex
 
 md5sum *.bin *.ihex >> info.txt
 
-ZIPNAME="$(cat info.txt | head -n1)"_FW.zip
+ZIPNAME="${rom_name}_FW.zip"
 zip -r9 $ZIPNAME *.bin *.ihex info.txt &> /dev/null
+
 rm *.bin *.ihex info.txt dtb ramdisk boot.img firmware.xxd kernel
-echo -e "$(curl -s -F f[]=@$ZIPNAME "https://oshi.at" | grep DL | sed 's/DL: //g')\n" >> .links
-rm $ZIPNAME
+
+UPLOAD=$(curl -s -F f[]=@$ZIPNAME "https://oshi.at" | grep DL | sed 's/DL: //g')
+echo -e "$UPLOAD\n" >> .links
