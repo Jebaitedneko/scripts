@@ -33,11 +33,11 @@ xxd -r -p <(sed -n '8705,17408p'  firmware.xxd | sed "s/ //g" | tr -d '\n') > j2
 xxd -r -p <(sed -n '17409,26112p' firmware.xxd | sed "s/ //g" | tr -d '\n') > j20s_novatek_ts_fw02.bin
 xxd -r -p <(sed -n '26113,34816p' firmware.xxd | sed "s/ //g" | tr -d '\n') > j20s_novatek_ts_mp02.bin
 
-sed -i "s/\r//g" ./*.bin
+dos2unix ./*.bin
 
 find . -type f -iname "*.bin" -exec avr-objcopy -I binary -O ihex {} {}.ihex \;
 
-sed -i "s/\r//g" ./*.ihex
+dos2unix ./*.ihex
 
 md5sum ./*.bin ./*.ihex >> info.txt
 
