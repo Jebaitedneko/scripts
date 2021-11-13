@@ -1,15 +1,15 @@
 #!/bin/bash
 
-rom_link="$1"
+ROM_LINK="$1"
 
-rom_name=$(echo "$rom_link" | sed 's/.*\///;s/.zip//g')
-echo "$rom_name" > info.txt
+ROM_NAME=$(echo "$ROM_LINK" | sed 's/.*\///;s/.zip//g')
+echo "$ROM_NAME" > info.txt
 
-if [ ! -f "${rom_name}.zip" ]; then
-	aria2c -j32 "$rom_link" &> /dev/null
+if [ ! -f "${ROM_NAME}.zip" ]; then
+	aria2c -j32 "$ROM_LINK" &> /dev/null
 fi
 
-unzip -p "${rom_name}.zip" boot.img > boot
+unzip -p "${ROM_NAME}.zip" boot.img > boot
 
 if [ ! -f unpack_bootimg.py ]; then
 	wget "https://android.googlesource.com/platform/system/tools/mkbootimg/+archive/refs/heads/master.tar.gz" &> /dev/null
@@ -33,10 +33,12 @@ sed -i "s/\r//g" ./*.ihex
 
 md5sum ./*.bin ./*.ihex >> info.txt
 
-ZIPNAME="${rom_name}_FW.zip"
-zip -r9 "$ZIPNAME" ./*.bin ./*.ihex info.txt &> /dev/null
+ZIPNAME="$(echo "$ROM_NAME" | sed 's/miui_VAYU//g;s/Global//g')_TOUCH_FW.zip"
+zip -r9 "$ZIPNAME" ./*.bin ./*.ihex info.txt firmware.xxd kernel &> /dev/null
 
-rm ./*.bin ./*.ihex info.txt dtb ramdisk boot firmware.xxd kernel
+rm ./*.bin ./*.ihex info.txt dtb ramdisk boot firmware.xxd kernel "${ROM_NAME}.zip"
 
-UPLOAD=$(curl -s -F f[]=@"$ZIPNAME" "https://oshi.at" | grep DL | sed 's/DL: //g')
-echo -e "$UPLOAD\n" >> .links
+if [[ $2 != '' && $2 == 'u' ]]; then
+	UPLOAD=$(curl -s -F f[]=@"$ZIPNAME" "https://oshi.at" | grep DL | sed 's/DL: //g')
+	echo -e "$UPLOAD\n" >> .links
+fi
