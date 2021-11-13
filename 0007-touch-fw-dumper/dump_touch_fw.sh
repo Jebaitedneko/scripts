@@ -42,7 +42,11 @@ sed -i "s/\r//g" ./*.ihex
 md5sum ./*.bin ./*.ihex >> info.txt
 
 ZIPNAME="${ROM_NAME_MIN}_TOUCH_FW.zip"
-zip -r9 "$ZIPNAME" ./*.bin ./*.ihex info.txt firmware.xxd kernel &> /dev/null
+zip -r9 "$ZIPNAME" ./*.bin ./*.ihex info.txt &> /dev/null
+
+if [[ $3 != '' && $3 == 'k' ]]; then
+	zip -ur "$ZIPNAME" firmware.xxd kernel
+fi
 
 rm ./*.bin ./*.ihex info.txt dtb ramdisk boot firmware.xxd kernel "${ROM_NAME}.zip"
 
