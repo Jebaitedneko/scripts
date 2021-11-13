@@ -19,7 +19,7 @@ cd "$ROM_NAME_MIN"
 echo "$ROM_NAME" > info.txt
 
 if [ ! -f "${ROM_NAME}.zip" ]; then
-	aria2c -j32 "$ROM_LINK" &> /dev/null
+	aria2c -j32 -x16 -c -s16 "$ROM_LINK" &> aria.txt
 fi
 
 unzip -p "${ROM_NAME}.zip" boot.img > boot
@@ -56,3 +56,5 @@ mv "$ZIPNAME" ../
 cd ../
 
 rm -rf "$ROM_NAME_MIN"
+
+echo -e "JOB: $ROM_NAME_MIN DONE\n"
