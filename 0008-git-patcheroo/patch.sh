@@ -22,8 +22,8 @@ function orej() {
 
 function scrape() {
 	req=$(curl -s "$1/commits" | grep "Copy the full SHA" | grep -oE "[0-9a-f]{40}")
- 	echo -e "$req" > /tmp/req
- 	first=$(cat /tmp/req | head -n1)
+	echo -e "$req" > ./req
+	first=$(cat ./req | head -n1)
 	if [[ $2 -gt 0 ]]; then
 		i=34
 		j=$2
@@ -35,7 +35,7 @@ function scrape() {
 			j=$(($j-1))
 		done
 	fi
-	rm /tmp/req
+	rm ./req
 }
 
 function gpatch() {
@@ -46,9 +46,9 @@ function gpatch() {
 
 	link=$(echo "$1" | cut -f1 -d#)
 	name=$(echo "$link" | sed "s/.*commit\///g")
-	ftmp="/tmp/$name"
-#	cmsg="/tmp/$cmsg"
-	plog="/tmp/patch_log"
+	ftmp="./$name"
+#	cmsg="./$cmsg"
+	plog="./patch_log"
 
 	[[ $REPO_LINK != "" ]] && link="$REPO_LINK/commit/$1"
 	curl -s "$link".patch > "$ftmp"
@@ -79,7 +79,6 @@ function gpatch() {
 		git ls-files -dmo | grep -v out | while read f; do git add -f "$f"; done
 		git commit -m "$subjct" --author="$author" -s # --date="$codate"
 		echo -e "\n" && git log --oneline | head -n3
-#		rm "$ftmp"
 	else
 		echo -e "\nPatching failed. Saving the original commit info to \$subjct, author data to \$author, date to \$codate."
  		echo -e "\n\nPlease review the changes and commit it with"
@@ -87,7 +86,7 @@ function gpatch() {
  		echo -e "\n\nRecent commits:"
 		git log --oneline | head -n3
 		echo -e "\n"
-#		rm "$ftmp"
 	fi
+	rm $plog $ftmp
 
 }
