@@ -21,20 +21,15 @@ function orej() {
 }
 
 function scrape() {
-	req=$(curl -s "$1/commits" | grep "Copy the full SHA" | grep -oE "[0-9a-f]{40}")
-	echo -e "$req" > ./req
-	first=$(cat ./req | head -n1)
-	if [[ $2 -gt 0 ]]; then
-		i=34
-		j=$2
-		while [ $((j)) -gt 0 ]; do
-			link="$1/commits/$3?after=$(echo $first)+$i&branch=$3"
-			echo -e "\n$link"
-			curl -s "$link" | grep "Copy the full SHA" | grep -oE "[0-9a-f]{40}"
-			i=$(($i+35))
-			j=$(($j-1))
-		done
-	fi
+	curl -s "$1/commits" | grep "Copy the full SHA" | grep -oE "[0-9a-f]{40}" &> ./req
+	first=$(head -n1 < ./req)
+	i=34; j=$2
+	while [ $((j)) -gt 0 ]; do
+		link="$1/commits/$3?after=$first+$i&branch=$3"
+		echo -e "\n$link"
+		curl -s "$link" | grep "Copy the full SHA" | grep -oE "[0-9a-f]{40}"
+		i=$((i+35)); j=$((j-1))
+	done
 	rm ./req
 }
 
@@ -47,15 +42,13 @@ function gpatch() {
 	link=$(echo "$1" | cut -f1 -d#)
 	name=$(echo "$link" | sed "s/.*commit\///g")
 	ftmp="./$name"
-#	cmsg="./$cmsg"
 	plog="./patch_log"
 
 	[[ $REPO_LINK != "" ]] && link="$REPO_LINK/commit/$1"
 	curl -s "$link".patch > "$ftmp"
-#	curl -s "$link".patch | grep "<title>" | sed 's/<title>//g;s/ · .*//g;s/^[[:space:]]*//g' > "$cmsg"
-	cmtmsg=$(cat "$ftmp" | awk '/---/{stop=1} stop==0{print}' | tail -n+2 | sed "s/\[PATCH\]//g")
+	cmtmsg=$(awk '/---/{stop=1} stop==0{print}' < ./"$ftmp" | tail -n+2 | sed "s/\[PATCH\]//g")
 	newlineys_msg=$(echo "$cmtmsg" | pcregrep -M 'Subject.*\n .*\n')
-	if [[ $(echo "$newlineys_msg" | wc -c) -gt 1 ]]; then
+	if [[ $(("${#newlineys_msg}")) -gt 0 ]]; then
 		corrected_msg=$(echo "$newlineys_msg" | sed ':a;N;$!ba;s/\n//g')
 		echo "Fixing commit msg newlines"
 		cmtmsg=$(echo "$cmtmsg" | grep -v "$newlineys_msg")
@@ -74,9 +67,9 @@ function gpatch() {
 
 	result="$(( $(grep -oE "*.rej" "$plog" | wc -c) + $(grep -oE "File to patch:" "$plog" | wc -c) ))"
 	if [[ $result -eq 0 ]]; then
-		echo -e "\nPatching succeeded. Applying empty commit from original data. Please review the changes and amend it."
-		crej
-		git ls-files -dmo | grep -v out | while read f; do git add -f "$f"; done
+		echo -e "\nPatching succeeded. Applying commit from original data. Please review the changes and amend it."
+		crej; rm "$plog" "$ftmp"
+		git ls-files -dmo | grep -v out | while read -r f; do git add -f "$f"; done
 		git commit -m "$subjct" --author="$author" -s # --date="$codate"
 		echo -e "\n" && git log --oneline | head -n3
 	else
@@ -86,7 +79,7 @@ function gpatch() {
  		echo -e "\n\nRecent commits:"
 		git log --oneline | head -n3
 		echo -e "\n"
+		rm "$plog" "$ftmp"
 	fi
-	rm $plog $ftmp
 
 }
