@@ -21,18 +21,21 @@ function orej() {
 }
 
 function scrape() {
-	req=$(curl -s "$1/commits" | grep "Copy the full SHA" | cut -f2 -d \" | grep -v "[0-9]:[0-9]")
+	req=$(curl -s "$1/commits" | grep "Copy the full SHA" | grep -oE "[0-9a-f]{40}")
  	echo -e "$req" > /tmp/req
  	first=$(cat /tmp/req | head -n1)
 	if [[ $2 -gt 0 ]]; then
 		i=34
-		for n in {1..5}; do
+		j=$2
+		while [ $((j)) -gt 0 ]; do
 			link="$1/commits/$3?after=$(echo $first)+$i&branch=$3"
 			echo -e "\n$link"
-			curl -s "$link" | grep "Copy the full SHA" | cut -f2 -d \" | grep -v "[0-9]:[0-9]"
+			curl -s "$link" | grep "Copy the full SHA" | grep -oE "[0-9a-f]{40}"
 			i=$(($i+35))
+			j=$(($j-1))
 		done
 	fi
+	rm /tmp/req
 }
 
 function gpatch() {
