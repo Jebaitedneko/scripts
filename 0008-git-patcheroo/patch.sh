@@ -69,7 +69,7 @@ function gpatch() {
 	if [[ $result -eq 0 ]]; then
 		echo -e "\nPatching succeeded. Applying commit from original data. Please review the changes and amend it."
 		crej; rm "$plog" "$ftmp"
-		git ls-files -dmo | grep -v out | while read -r f; do git add -f "$f"; done
+		git ls-files -dmo | grep -vE "^out/" | while read -r f; do git add -f "$f"; done
 		git commit -m "$subjct" --author="$author" -s # --date="$codate"
 		echo -e "\n" && git log --oneline | head -n3
 	else
