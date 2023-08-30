@@ -1,0 +1,33 @@
+From 1d6eef858e0c5ae4594136df7d6be60bacd442e8 Mon Sep 17 00:00:00 2001
+From: Jebaitedneko <Jebaitedneko@gmail.com>
+Date: Fri, 2 Jun 2023 02:24:03 +0530
+Subject: [PATCH] patch
+
+---
+ uvc_driver.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/uvc_driver.c b/uvc_driver.c
+index 7aefa76..723f303 100644
+--- a/uvc_driver.c
++++ b/uvc_driver.c
+@@ -2402,6 +2402,16 @@ static const struct uvc_device_info uvc_quirk_force_y8 = {
+  * though they are compliant.
+  */
+ static const struct usb_device_id uvc_ids[] = {
++	/* Quanta ACER HD User Facing */
++	{ .match_flags 	= USB_DEVICE_ID_MATCH_DEVICE
++			| USB_DEVICE_ID_MATCH_INT_INFO,
++	  .idVendor = 0x0408,
++	  .idProduct = 0x4035,
++	  .bInterfaceClass = USB_CLASS_VIDEO,
++	  .bInterfaceSubClass = 1,
++	  .bInterfaceProtocol =	UVC_PC_PROTOCOL_15,
++	  .driver_info = (kernel_ulong_t)&(const struct uvc_device_info){.uvc_version = 0x010a,}
++	},
+ 	/* Quanta USB2.0 HD UVC Webcam */
+ 	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
+ 				| USB_DEVICE_ID_MATCH_INT_INFO,
+-- 
+2.41.0.rc2
+
