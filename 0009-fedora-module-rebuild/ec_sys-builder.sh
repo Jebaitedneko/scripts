@@ -24,16 +24,15 @@ make modules_prepare
 xzcat /boot/symvers-$(uname -r).xz | grep "drivers/acpi" > drivers/acpi/Module.symvers
 xzcat /boot/symvers-$(uname -r).xz > Module.symvers
 make M=drivers/acpi modules
-cp drivers/acpi/ec_sys.ko ~
+xz -z drivers/acpi/ec_sys.ko
+sudo cp drivers/acpi/ec_sys.ko.xz /usr/lib/modules/$(uname -r)/kernel/drivers/acpi
 
 xzcat /boot/symvers-$(uname -r).xz | grep "drivers/media/usb/uvc" > drivers/media/usb/uvc/Module.symvers
 ( cd drivers/media/usb/uvc && patch -Np1 < ~/uvc_driver.patch )
 make M=drivers/media/usb/uvc modules
-UVC_ORIGINAL=$(find /usr/lib/modules/$(uname -r) -type f -iname "*uvcvideo*")
-UVC_ORIGNAL_BASENAME=$(basename "$UVC_ORIGINAL")
-UVC_ORIGNAL_DIRNAME=$(dirname "$UVC_ORIGINAL")
 xz -z drivers/media/usb/uvc/uvcvideo.ko
-sudo cp drivers/media/usb/uvc/uvcvideo.ko.xz "$UVC_ORIGNAL_DIRNAME"
+sudo cp drivers/media/usb/uvc/uvcvideo.ko.xz /usr/lib/modules/$(uname -r)/kernel/drivers/media/usb/uvc
 
+sudo depmod
 # make binrpm-pkg
 cd ~ && set +x
